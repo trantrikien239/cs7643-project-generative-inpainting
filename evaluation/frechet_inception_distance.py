@@ -11,10 +11,7 @@ from numpy.random import random, randint
 from scipy.linalg import sqrtm
 
 
-def calculate_fid(model, batch1, batch2):
-    # calculate activations
-    act1 = model(batch1).detach().numpy()
-    act2 = model(batch2).detach().numpy()
+def calculate_fid(act1, act2):
     # calculate mean and covariance statistics
     mu1, sigma1 = act1.mean(axis=0), cov(act1, rowvar=False)
     mu2, sigma2 = act2.mean(axis=0), cov(act2, rowvar=False)
@@ -73,15 +70,18 @@ if __name__ == "__main__":
     images2 = preprocess(images2)
     images3 = preprocess(images3)
 
-    batch12 = torch.stack([images1, images2])
-    batch23 = torch.stack([images1, images3])
+    batch12 = torch.stack([images1, images2]*10)
+    batch23 = torch.stack([images1, images3]*10)
 
 
+    # calculate activations
+    act1 = model(batch12).detach().numpy()
+    act2 = model(batch23).detach().numpy()
 
 
     # fid between images1 and images1
-    fid = calculate_fid(model, batch12, batch12)
+    fid = calculate_fid(act1, act1)
     print('FID (same): %.3f' % fid)
     # fid between images1 and images2
-    fid = calculate_fid(model, batch12, batch23)
+    fid = calculate_fid(act1, act2)
     print('FID (different): %.3f' % fid)
